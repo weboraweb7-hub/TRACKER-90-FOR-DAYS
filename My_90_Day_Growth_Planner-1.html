@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My 90-Day Growth Planner</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+ --bg:#f4f6fa;--card:#fff;--text:#172033;--muted:#667085;--primary:#4f46e5;
+ --primary2:#eef2ff;--line:#e5e7eb;--green:#16a34a;--orange:#ea580c;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+header{background:#171a2b;color:white;padding:28px 18px}
+header .wrap{max-width:1450px;margin:auto}
+h1{margin:0;font-size:28px}header p{margin:7px 0 0;color:#cbd5e1}
+.wrap{max-width:1450px;margin:auto;padding:18px}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.nav button{border:0;background:white;border:1px solid var(--line);padding:10px 15px;border-radius:10px;cursor:pointer;font-weight:600}
+.nav button.active{background:var(--primary);color:white;border-color:var(--primary)}
+.page{display:none}.page.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 3px 12px #00000007}
+.statnum{font-size:30px;font-weight:800;margin-top:5px}.muted{color:var(--muted);font-size:13px}
+.chartgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.chartbox{height:350px}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.btn{border:0;border-radius:9px;padding:9px 13px;cursor:pointer;background:#171a2b;color:white}.btn.light{background:white;color:#171a2b;border:1px solid var(--line)}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px;margin-top:15px;background:white}
+table{border-collapse:collapse;width:100%;min-width:1250px}th,td{border-bottom:1px solid var(--line);padding:8px;text-align:center;font-size:12px}
+th{background:#f8fafc;font-weight:700;position:sticky;top:0;z-index:3}
+th:first-child,td:first-child{position:sticky;left:0;background:white;z-index:2}
+.check{width:20px;height:20px;cursor:pointer}.date{width:125px}.note{min-width:190px}
+.scorebar{width:80px;height:8px;background:#e5e7eb;border-radius:20px;margin:auto;overflow:hidden}.scorebar i{display:block;height:100%;background:var(--primary)}
+.schedule{display:grid;grid-template-columns:120px 1fr 90px;overflow:hidden;border:1px solid var(--line);border-radius:14px;background:white}
+.schedule>div{padding:12px;border-bottom:1px solid var(--line)}.schedule .head{background:#f8fafc;font-weight:700}
+.phase{margin:12px 0;padding:18px;border-radius:13px;background:white;border:1px solid var(--line)}
+.phase h3{margin:0 0 7px}.tag{display:inline-block;padding:4px 8px;border-radius:99px;background:var(--primary2);color:#3730a3;font-size:12px;font-weight:700}
+.rules li{margin:9px 0}
+.weektable{min-width:700px}
+input[type=text]{border:1px solid var(--line);border-radius:7px;padding:7px;width:100%}
+@media(max-width:950px){.stats{grid-template-columns:repeat(2,1fr)}.chartgrid{grid-template-columns:1fr}}
+@media(max-width:550px){.stats{grid-template-columns:1fr}.wrap{padding:12px}h1{font-size:23px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>90-Day Growth Planner</h1>
+<p>Build skills • Prepare for Master's • Improve English • Create content • Build income</p>
+</div></header>
+
+<div class="wrap">
+<div class="nav">
+<button class="active" onclick="tab('dash',this)">📊 Dashboard</button>
+<button onclick="tab('daily',this)">✅ Daily Tracker</button>
+<button onclick="tab('schedule',this)">🕒 Timetable</button>
+<button onclick="tab('plan',this)">🚀 90-Day Plan</button>
+<button onclick="tab('weekly',this)">📅 Weekly Review</button>
+</div>
+
+<section id="dash" class="page active">
+<div class="stats">
+<div class="card"><div class="muted">90-Day Average</div><div class="statnum" id="avg">0%</div></div>
+<div class="card"><div class="muted">Successful Days (80%+)</div><div class="statnum" id="success">0</div></div>
+<div class="card"><div class="muted">Tasks Completed</div><div class="statnum" id="completed">0</div></div>
+<div class="card"><div class="muted">Current Streak</div><div class="statnum" id="streak">0</div></div>
+</div>
+<div class="card" style="margin-top:18px">
+<div class="section-title"><div><h2 style="margin:0">Your 90-Day Progress</h2><p class="muted">Aim for consistency, not perfection.</p></div></div>
+<div class="chartgrid">
+<div class="chartbox"><canvas id="line"></canvas></div>
+<div class="chartbox"><canvas id="bar"></canvas></div>
+</div>
+</div>
+</section>
+
+<section id="daily" class="page">
+<div class="card">
+<div class="section-title">
+<div><h2 style="margin:0">Daily Tracker</h2><p class="muted">Tick ✓ when the activity is completed. Everything is saved automatically in this browser.</p></div>
+<div><button class="btn light" onclick="window.print()">🖨 Print</button> <button class="btn" onclick="resetData()">Reset</button></div>
+</div>
+<div class="tablewrap">
+<table>
+<thead><tr>
+<th>Day</th><th>Date</th>
+<th>🏃 Run<br>45m</th>
+<th>💻 C<br>1h</th>
+<th>🤖 AI / Master's<br>3h</th>
+<th>🇬🇧 English<br>1h</th>
+<th>📝 DET<br>1h</th>
+<th>🎬 Shorts<br>1.5h</th>
+<th>📱 Ads + Social<br>1.5h</th>
+<th>💰 Income<br>≤3h</th>
+<th>⚡ Electrical<br>1h</th>
+<th>🎓 Master's Updates<br>15m</th>
+<th>Done</th><th>Score</th><th>Notes</th>
+</tr></thead>
+<tbody id="rows"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<section id="schedule" class="page">
+<div class="card">
+<h2>🕒 Daily Timetable</h2>
+<p class="muted">Master's learning and Master's application/update work are intentionally separated.</p>
+<div class="schedule">
+<div class="head">Time</div><div class="head">Activity</div><div class="head">Priority</div>
+<div>5:30–6:15</div><div>🏃 Running / Exercise</div><div>HIGH</div>
+<div>6:15–6:45</div><div>Fresh up</div><div>—</div>
+<div>6:45–7:45</div><div>💻 C Programming — Code With Harry</div><div>HIGH</div>
+<div>7:45–9:00</div><div>🤖 AI / Master's Basics — from scratch</div><div>HIGH</div>
+<div>9:00–9:30</div><div>🍳 Breakfast</div><div>—</div>
+<div>9:30–11:00</div><div>🤖 AI / Master's Basics — continued</div><div>HIGH</div>
+<div>11:00–12:00</div><div>🇬🇧 English Exam Preparation</div><div>HIGH</div>
+<div>12:00–12:15</div><div>🎓 Master's Daily Check: emails, deadlines, documents, applications, university updates + one next action</div><div>HIGH</div>
+<div>12:15–1:00</div><div>🍽 Lunch / Rest</div><div>—</div>
+<div>1:00–2:00</div><div>📝 Duolingo English Test Preparation</div><div>HIGH</div>
+<div>2:00–3:30</div><div>🎬 YouTube Shorts / Ranking Videos / Viral Content</div><div>HIGH</div>
+<div>3:30–4:00</div><div>Break / Walk</div><div>—</div>
+<div>4:00–5:00</div><div>⚡ Electrical Basics</div><div>HIGH</div>
+<div>5:00–6:30</div><div>📱 Ad Videos + Instagram/YouTube Profile Updates</div><div>MEDIUM</div>
+<div>6:30–7:00</div><div>🍽 Dinner / Break</div><div>—</div>
+<div>7:00–10:00</div><div>💰 Income Block — App / Resume Website / Book. <b>Maximum 3 hours.</b></div><div>HIGH</div>
+<div>10:00–10:30</div><div>📊 Daily Review + Tracker + Tomorrow's Top 3</div><div>HIGH</div>
+</div>
+</div>
+</section>
+
+<section id="plan" class="page">
+<div class="card">
+<h2>🚀 Your 90-Day Beta Plan</h2>
+<div class="phase"><span class="tag">DAYS 1–30</span><h3>Foundation</h3>
+Build the habit and learn fundamentals. AI: computer/Python/AI/ML foundations and required math. C: syntax, logic, functions, arrays and pointers. Electrical: circuit and electronics fundamentals. English/DET: understand the exam and build core skills. Content: learn scripting, editing and hooks. Income: define the App and Resume Website MVPs; validate a book idea before writing.</div>
+<div class="phase"><span class="tag">DAYS 31–60</span><h3>Build</h3>
+AI/ML basics + small project. C problem solving. Timed English/DET practice and weekly mock. Produce Shorts consistently and create ad variations. Build the App core and Resume Creator workflow. Start the book only if the idea is strong.</div>
+<div class="phase"><span class="tag">DAYS 61–90</span><h3>Execute</h3>
+Complete an AI portfolio project, Master's preparation checklist and DET mocks. Improve content from analytics. Prepare launch/marketing for the App and Resume Website. Publish the book only when the manuscript is ready.</div>
+<h2>💰 Income Rotation</h2>
+<p><b>Mon–Wed:</b> App &nbsp; • &nbsp; <b>Thu–Fri:</b> Resume Website &nbsp; • &nbsp; <b>Sat:</b> Book / idea validation &nbsp; • &nbsp; <b>Sun:</b> Marketing + analytics + weekly review</p>
+<h2>🎯 Beta Rules</h2>
+<ul class="rules">
+<li>Target <b>80%+ daily completion</b>.</li>
+<li>Missing one task does not mean a failed day. Continue normally.</li>
+<li>Income work is capped at <b>3 hours</b>.</li>
+<li>Master's Updates stays at <b>15 minutes only</b>.</li>
+<li>Every 7 days, review the graph and adjust your workload.</li>
+<li>Do not start a new major project unless you replace or finish an existing one.</li>
+</ul>
+</div>
+</section>
+
+<section id="weekly" class="page">
+<div class="card">
+<h2>📅 Weekly Review</h2>
+<p class="muted">Use this every Sunday. Write one win, one problem and one adjustment.</p>
+<div class="tablewrap">
+<table class="weektable"><thead><tr><th>Week</th><th>Days</th><th>Average</th><th>Biggest Win</th><th>Main Problem</th><th>Next Week Focus</th></tr></thead>
+<tbody id="weeks"></tbody></table>
+</div>
+</div>
+</section>
+</div>
+
+<script>
+const KEY='my90dayGrowthPlanner_v4';
+const TASKS=['run','c','ai','english','det','shorts','ads','income','electrical','masters'];
+const LABELS=['Running','C Programming','AI / Master’s Learning','English','Duolingo/DET','Shorts','Ads + Social','Income','Electrical','Master’s Updates'];
+const DB_NAME='Praveen90DayPlannerDB', STORE='planner';
+let data=Array.from({length:90},(_,i)=>({day:i+1,date:'',tasks:{},notes:''}));
+let lineChart,barChart,saveTimer;
+
+function freshData(){return Array.from({length:90},(_,i)=>({day:i+1,date:'',tasks:{},notes:''}));}
+function openDB(){
+ return new Promise((resolve,reject)=>{
+  if(!window.indexedDB){reject(new Error('IndexedDB unavailable'));return;}
+  const req=indexedDB.open(DB_NAME,1);
+  req.onupgradeneeded=e=>e.target.result.createObjectStore(STORE);
+  req.onsuccess=e=>resolve(e.target.result);
+  req.onerror=e=>reject(e.target.error);
+ });
+}
+async function loadData(){
+ try{
+  const db=await openDB();
+  const d=await new Promise((resolve,reject)=>{
+   const tx=db.transaction(STORE,'readonly'),req=tx.objectStore(STORE).get(KEY);
+   req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+  });
+  db.close();
+  if(d) data=d;
+  else {
+   const old=localStorage.getItem(KEY);
+   data=old?JSON.parse(old):freshData();
+   await saveNow();
+  }
+ }catch(e){
+  try{const old=localStorage.getItem(KEY);data=old?JSON.parse(old):freshData();}catch(_){data=freshData();}
+ }
+ renderRows();
+}
+async function saveNow(){
+ try{
+  const db=await openDB();
+  await new Promise((resolve,reject)=>{
+   const tx=db.transaction(STORE,'readwrite');
+   tx.objectStore(STORE).put(data,KEY);
+   tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+  });
+  db.close();
+ }catch(e){
+  try{localStorage.setItem(KEY,JSON.stringify(data));}catch(_){}
+ }
+}
+function save(){
+ clearTimeout(saveTimer);
+ saveTimer=setTimeout(saveNow,50);
+}
+function renderRows(){
+ const body=document.getElementById('rows'); body.innerHTML='';
+ data.forEach((d,i)=>{
+   const tr=document.createElement('tr');
+   tr.innerHTML='<td><b>'+d.day+'</b></td><td><input class="date" type="date" value="'+(d.date||'')+'" onchange="data['+i+'].date=this.value;save()"></td>';
+   TASKS.forEach(t=>{
+     tr.innerHTML+='<td><input class="check" type="checkbox" '+(d.tasks[t]?'checked':'')+' onchange="setTask('+i+',\''+t+'\',this.checked)"></td>';
+   });
+   const done=TASKS.filter(t=>d.tasks[t]).length, pct=Math.round(done/10*100);
+   tr.innerHTML+='<td>'+done+'/10</td><td><div class="scorebar"><i style="width:'+pct+'%"></i></div>'+pct+'%</td>';
+   tr.innerHTML+='<td class="note"><input type="text" value="'+escapeHtml(d.notes||'')+'" placeholder="What did you learn / finish?" onchange="data['+i+'].notes=this.value;save()"></td>';
+   body.appendChild(tr);
+ });
+ updateStats(); renderCharts(); renderWeeks();
+}
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function setTask(i,t,v){
+ data[i].tasks[t]=v; save(); updateStats(); renderCharts(); renderDayScore(i);
+}
+function renderDayScore(i){
+ const row=document.querySelectorAll('#rows tr')[i];
+ if(!row)return;
+ const done=TASKS.filter(t=>data[i].tasks[t]).length, pct=Math.round(done/10*100);
+ row.cells[12].textContent=done+'/10';
+ row.cells[13].innerHTML='<div class="scorebar"><i style="width:'+pct+'%"></i></div>'+pct+'%';
+}
+function scores(){return data.map(d=>TASKS.filter(t=>d.tasks[t]).length/10);}
+function updateStats(){
+ const s=scores(),avg=s.reduce((a,b)=>a+b,0)/90;
+ document.getElementById('avg').textContent=Math.round(avg*100)+'%';
+ document.getElementById('success').textContent=s.filter(x=>x>=.8).length;
+ document.getElementById('completed').textContent=s.reduce((a,b)=>a+b*10,0);
+ let st=0;for(let i=89;i>=0;i--){if(s[i]>0)st++;else break}document.getElementById('streak').textContent=st;
+}
+function renderCharts(){
+ const s=scores();
+ if(lineChart)lineChart.destroy();if(barChart)barChart.destroy();
+ lineChart=new Chart(document.getElementById('line'),{type:'line',data:{labels:s.map((_,i)=>'Day '+(i+1)),datasets:[{label:'Daily Completion %',data:s.map(x=>Math.round(x*100)),tension:.25,fill:false}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:0,max:100}}}});
+ const totals=TASKS.map(t=>data.filter(d=>d.tasks[t]).length);
+ barChart=new Chart(document.getElementById('bar'),{type:'bar',data:{labels:LABELS,datasets:[{label:'Completed Days',data:totals}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:0,max:90}}}});
+}
+function renderWeeks(){
+ const body=document.getElementById('weeks');body.innerHTML='';
+ for(let w=1;w<=13;w++){
+  const start=(w-1)*7,end=Math.min(w*7,90),slice=scores().slice(start,end);
+  const avg=slice.reduce((a,b)=>a+b,0)/slice.length;
+  body.innerHTML+='<tr><td><b>Week '+w+'</b></td><td>Day '+(start+1)+'–'+end+'</td><td>'+Math.round(avg*100)+'%</td><td><input type="text" placeholder="My biggest win"></td><td><input type="text" placeholder="What blocked me?"></td><td><input type="text" placeholder="What will I change?"></td></tr>';
+ }
+}
+function tab(id,btn){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+ btn.classList.add('active');
+ if(id==='dash')setTimeout(renderCharts,30);
+}
+function resetData(){
+ if(confirm('Reset all 90-day data? This cannot be undone.')){
+  data=freshData();saveNow();renderRows();
+ }
+}
+loadData();
+</script>
+</body>
+</html>
